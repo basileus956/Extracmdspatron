@@ -1,0 +1,16 @@
+[
+{
+  "modid": "extracmds",
+  "name": "ExtraCMDS",
+  "description": "New mods to Minecraft.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Binaris"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

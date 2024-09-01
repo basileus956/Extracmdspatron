@@ -1,0 +1,41 @@
+package com.binaris.extracmds;
+
+import com.binaris.extracmds.command.*;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import org.apache.logging.log4j.Logger;
+
+@Mod(modid = ExtraCMDS.MODID, name = ExtraCMDS.NAME, version = ExtraCMDS.VERSION)
+public class ExtraCMDS {
+    public static final String MODID = "extracmds";
+    public static final String NAME = "ExtraCMDS";
+    public static final String VERSION = "1.0.0";
+
+    public static Logger logger;
+
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        logger = event.getModLog();
+    }
+
+    @EventHandler
+    public void init(FMLInitializationEvent event) {
+//        // some example code
+//        logger.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
+    }
+
+    @EventHandler
+    public void serverStarting(FMLServerStartingEvent event){
+        event.registerServerCommand(new FixCommand());
+        event.registerServerCommand(new SkullCommand());
+        event.registerServerCommand(new RenameCommand());
+        event.registerServerCommand(new ReplaceLoreLineCommand());
+        event.registerServerCommand(new LoreCommand());
+        event.registerServerCommand(new CustomEnchantCommand());
+        event.registerServerCommand(new AttributeCommand());
+        event.registerServerCommand(new PotionCommand());
+    }
+}
