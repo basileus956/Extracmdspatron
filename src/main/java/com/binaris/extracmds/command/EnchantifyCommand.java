@@ -10,28 +10,29 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 // Silly warnings... o-o
 @SuppressWarnings("NullableProblems")
-public class CustomEnchantCommand extends CommandBase {
+public class EnchantifyCommand extends CommandBase {
 
     @Override
     public String getName() {
-        return "enchant";
+        return "enchantify";
     }
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/enchant [player] <enchantment> <level> || or /enchant <enchantment> <level>";
+        return "/enchantify <enchant> <level>";
     }
 
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (args.length < 2) {
-            throw new WrongUsageException("commands.enchant.usage", new Object[0]);
+        if (args.length < 1) {
+            throw new WrongUsageException(getUsage(sender));
         } else {
             EntityLivingBase livingBase;
             Enchantment enchantment;
@@ -47,7 +48,8 @@ public class CustomEnchantCommand extends CommandBase {
             if(enchantment != null){
                 livingBase = getCommandSenderAsPlayer(sender);
 
-                enchantmentLevel = secureParseInt(args[1]);
+                if (args.length >= 2) enchantmentLevel = secureParseInt(args[1]);
+
             } else {
                 livingBase = getEntity(server, sender, args[0], EntityLivingBase.class);
                 try {
@@ -79,7 +81,7 @@ public class CustomEnchantCommand extends CommandBase {
     private static int secureParseInt(String s) {
         try {
             return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             return 1;
         }
     }
@@ -105,9 +107,7 @@ public class CustomEnchantCommand extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
         if (args.length == 1) {
-            List<String> list = getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-            list.addAll(getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()));
-            return list;
+            return new ArrayList<>(getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()));
 
         } else {
             if(args.length == 2){

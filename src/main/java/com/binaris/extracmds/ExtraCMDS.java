@@ -1,6 +1,7 @@
 package com.binaris.extracmds;
 
 import com.binaris.extracmds.command.*;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -23,6 +24,8 @@ public class ExtraCMDS {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(new EventHandlerCommand());
+
 //        // some example code
 //        logger.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
     }
@@ -34,8 +37,13 @@ public class ExtraCMDS {
         event.registerServerCommand(new RenameCommand());
         event.registerServerCommand(new ReplaceLoreLineCommand());
         event.registerServerCommand(new LoreCommand());
-        event.registerServerCommand(new CustomEnchantCommand());
+        event.registerServerCommand(new EnchantifyCommand());
         event.registerServerCommand(new AttributeCommand());
         event.registerServerCommand(new PotionCommand());
+        event.registerServerCommand(new HealCommand());
+        event.registerServerCommand(new FeedCommand());
+        event.registerServerCommand(new UnenchantCommand());
+        event.registerServerCommand(new RemoveLoreCommand());
+        event.registerServerCommand(new RemoveAttributeCommand());
     }
 }
