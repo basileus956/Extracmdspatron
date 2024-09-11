@@ -34,7 +34,7 @@ public class EnchantifyCommand extends CommandBase {
         if (args.length < 1) {
             throw new WrongUsageException(getUsage(sender));
         } else {
-            EntityLivingBase livingBase;
+            EntityLivingBase livingBase = null;
             Enchantment enchantment;
             int enchantmentLevel = 1;
 
@@ -50,17 +50,10 @@ public class EnchantifyCommand extends CommandBase {
 
                 if (args.length >= 2) enchantmentLevel = secureParseInt(args[1]);
 
-            } else {
-                livingBase = getEntity(server, sender, args[0], EntityLivingBase.class);
-                try {
-                    enchantment = Enchantment.getEnchantmentByID(parseInt(args[1], 0));
-                } catch (NumberInvalidException var12) {
-                    enchantment = Enchantment.getEnchantmentByLocation(args[1]);
-                }
             }
 
             if (enchantment == null) {
-                throw new NumberInvalidException("commands.enchant.notFound", new Object[]{args[1]});
+                throw new NumberInvalidException("commands.enchant.notFound", new Object[]{args[0]});
             } else {
                 ItemStack stack = livingBase.getHeldItemMainhand();
                 if (stack.isEmpty()) {
@@ -108,15 +101,16 @@ public class EnchantifyCommand extends CommandBase {
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
         if (args.length == 1) {
             return new ArrayList<>(getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()));
-
-        } else {
-            if(args.length == 2){
-                if(Enchantment.getEnchantmentByLocation(args[0]) != null){
-                    return Collections.emptyList();
-                }
-            }
-            return args.length == 2 ? getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()) : Collections.emptyList();
         }
+//        else {
+//            if(args.length == 2){
+//                if(Enchantment.getEnchantmentByLocation(args[0]) != null){
+//                    return Collections.emptyList();
+//                }
+//            }
+//            return args.length == 2 ? getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()) : Collections.emptyList();
+//        }
+        return Collections.emptyList();
     }
 
     @Override

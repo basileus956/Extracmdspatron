@@ -2,6 +2,7 @@ package com.binaris.extracmds;
 
 import com.binaris.extracmds.command.*;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -14,6 +15,8 @@ public class ExtraCMDS {
     public static final String MODID = "extracmds";
     public static final String NAME = "ExtraCMDS";
     public static final String VERSION = "1.0.0";
+
+    public static final boolean WIZARDRYUTILS_LOADED = Loader.isModLoaded("wizardryutils");
 
     public static Logger logger;
 

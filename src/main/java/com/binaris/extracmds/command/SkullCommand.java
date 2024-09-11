@@ -21,7 +21,7 @@ public class SkullCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender iCommandSender) {
-        return "commands." + ExtraCMDS.MODID + ".skull.usage";
+        return "/skull <player> or /skull";
     }
 
     @Override

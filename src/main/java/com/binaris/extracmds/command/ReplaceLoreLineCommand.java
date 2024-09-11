@@ -24,7 +24,7 @@ public class ReplaceLoreLineCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "commands.extracmds.setloreline.usage";
+        return "/replaceloreline <line> <new line>";
     }
 
     @Override

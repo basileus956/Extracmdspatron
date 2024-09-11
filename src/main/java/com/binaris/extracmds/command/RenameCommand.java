@@ -21,7 +21,7 @@ public class RenameCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender iCommandSender) {
-        return "commands.extracmds.rename.usage";
+        return "/rename <name>";
     }
 
     @Override

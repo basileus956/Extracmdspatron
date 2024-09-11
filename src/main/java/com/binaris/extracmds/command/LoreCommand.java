@@ -24,7 +24,7 @@ public class LoreCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "commands.extracmds.lore.usage";
+        return "/lore <line>";
     }
 
     @Override

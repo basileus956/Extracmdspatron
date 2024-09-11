@@ -107,6 +107,8 @@ public final class CommandUtil {
 
     public static void wizardryUtilAttributes(HashMap<String, UUID> attributeUUIDs){
         // Custom WizardryUtil attributes
+        if(!ExtraCMDS.WIZARDRYUTILS_LOADED) return;
+
         attributeUUIDs.put("wizardryutils.SpellPotency", UUID.fromString("1F03D5C4-38F3-4A1E-B7B1-0B9B08C6D7AA"));
         attributeUUIDs.put("wizardryutils.SpellChargeup", UUID.fromString("2A67BB5C-19C1-4506-8157-9B3B5D8D8E1B"));
         attributeUUIDs.put("wizardryutils.SpellCost", UUID.fromString("3405C5BA-7A89-42B2-BF51-2FC8C9A1EB0F"));
