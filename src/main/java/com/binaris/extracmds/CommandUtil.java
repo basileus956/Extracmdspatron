@@ -174,4 +174,10 @@ public final class CommandUtil {
         attributeUUIDs.put("wizardryutils.HealingSpellRange", UUID.fromString("7B8C9A7F-4D9E-7C2A-8B5D-6A2E7F5B3C1D"));
         attributeUUIDs.put("wizardryutils.HealingSpellCooldown", UUID.fromString("8C9A7B6F-7D4E-9F2C-8A5D-7B3A6C1E5F7A"));
     }
+
+    public static void twilightForestAttributes(HashMap<String, UUID> attributeUUIDs) {
+        if (!net.minecraftforge.fml.common.Loader.isModLoaded("twilightforest")) return;
+
+        attributeUUIDs.put("generic.reachDistance", UUID.fromString("AB4F2E43-62D5-4A6E-A7DD-F453B8EAE6E5"));
+    }
 }

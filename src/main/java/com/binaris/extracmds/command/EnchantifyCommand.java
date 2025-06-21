@@ -25,7 +25,7 @@ public class EnchantifyCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/enchantify <enchant> <level>";
+        return "commands.enchantify.usage";
     }
 
 
@@ -53,18 +53,18 @@ public class EnchantifyCommand extends CommandBase {
             }
 
             if (enchantment == null) {
-                throw new NumberInvalidException("commands.enchant.notFound", new Object[]{args[0]});
+                throw new NumberInvalidException("commands.enchantify.notFound", new Object[]{args[0]});
             } else {
                 ItemStack stack = livingBase.getHeldItemMainhand();
                 if (stack.isEmpty()) {
-                    throw new CommandException("commands.enchant.noItem", new Object[0]);
+                    throw new CommandException("commands.enchant.noItem");
                 } else {
                     if (args.length >= 3) {
                         enchantmentLevel = parseInt(args[2]);
                     }
 
                     setEnchantment(enchantment, enchantmentLevel, stack);
-                    notifyCommandListener(sender, this, "commands.enchant.success", new Object[0]);
+                    notifyCommandListener(sender, this, "commands.enchant.success");
                     sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, 1);
                 }
             }
@@ -102,14 +102,6 @@ public class EnchantifyCommand extends CommandBase {
         if (args.length == 1) {
             return new ArrayList<>(getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()));
         }
-//        else {
-//            if(args.length == 2){
-//                if(Enchantment.getEnchantmentByLocation(args[0]) != null){
-//                    return Collections.emptyList();
-//                }
-//            }
-//            return args.length == 2 ? getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()) : Collections.emptyList();
-//        }
         return Collections.emptyList();
     }
 

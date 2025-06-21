@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 
 // Silly warnings... o-o
 @SuppressWarnings("NullableProblems")
@@ -21,32 +22,32 @@ public class RemoveLoreCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/removelore [line number]";
+        return "commands.extracmds.removelore.usage";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (!(sender instanceof EntityPlayerMP)) {
-            throw new CommandException("This command can only be used by a player.");
+            throw new CommandException("commands.extracmds.usage.needplayer");
         }
 
         EntityPlayerMP player = (EntityPlayerMP) sender;
         ItemStack itemStack = player.getHeldItemMainhand();
 
         if (itemStack.isEmpty()) {
-            throw new CommandException("You must be holding an item to remove lore.");
+            throw new CommandException("commands.extracmds.usage.needitem");
         }
 
         NBTTagCompound nbt = itemStack.getTagCompound();
 
         if (nbt == null || !nbt.hasKey("display", 10)) {
-            throw new CommandException("The held item has no lore to remove.");
+            throw new CommandException("commands.extracmds.removelore.error.nolore");
         }
 
         NBTTagCompound display = nbt.getCompoundTag("display");
 
         if (!display.hasKey("Lore", 9)) {
-            throw new CommandException("The held item has no lore to remove.");
+            throw new CommandException("commands.extracmds.removelore.error.nolore");
         }
 
         NBTTagList loreList = display.getTagList("Lore", 8);
@@ -60,12 +61,12 @@ public class RemoveLoreCommand extends CommandBase {
             try {
                 line = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
-                throw new CommandException("Invalid line number.");
+                throw new CommandException("commands.extracmds.removelore.error.invalid");
             }
 
             // Validate the line number
             if (line < 1 || line > loreList.tagCount()) {
-                throw new CommandException("Line number out of bounds.");
+                throw new CommandException("commands.extracmds.removelore.bounds");
             }
 
             // Remove the specific line (0-indexed in NBTTagList)
@@ -88,9 +89,9 @@ public class RemoveLoreCommand extends CommandBase {
 
         // Provide feedback to the player
         if (args.length == 0) {
-            player.sendMessage(new TextComponentString("Removed all lore from the held item."));
+            player.sendMessage(new TextComponentTranslation("commands.extracmds.removelore.success.all"));
         } else {
-            player.sendMessage(new TextComponentString("Removed lore line " + args[0] + " from the held item."));
+            player.sendMessage(new TextComponentTranslation("commands.extracmds.removelore.success", args[0]));
         }
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 // Silly warnings... o-o
@@ -21,7 +22,7 @@ public class RenameCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender iCommandSender) {
-        return "/rename <name>";
+        return "commands.extracmds.rename.usage";
     }
 
     @Override
@@ -32,7 +33,7 @@ public class RenameCommand extends CommandBase {
             player = getCommandSenderAsPlayer(sender);
         }catch (PlayerNotFoundException exception){
             if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be a player to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needplayer");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
                 return;
@@ -43,7 +44,7 @@ public class RenameCommand extends CommandBase {
 
         if(itemStack.isEmpty()){
             if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be holding an item to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needitem");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
                 return;
@@ -52,7 +53,7 @@ public class RenameCommand extends CommandBase {
 
         if(strings.length == 0){
             if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must provide a name.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.rename.error.noName");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
             }
@@ -71,7 +72,7 @@ public class RenameCommand extends CommandBase {
         itemStack.setStackDisplayName(name.toString());
 
         if(server.sendCommandFeedback()) {
-            ITextComponent textComponent = new TextComponentString("Renamed item to " + name);
+            ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.rename.success", name);
             textComponent.getStyle().setColor(TextFormatting.GREEN);
             sender.sendMessage(textComponent);
         }

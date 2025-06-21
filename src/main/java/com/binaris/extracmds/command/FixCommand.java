@@ -11,6 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
@@ -27,7 +28,7 @@ public class FixCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender iCommandSender) {
-        return "/fix or /fix all";
+        return "commands.extracmds.fix.usage";
     }
 
     @Override
@@ -38,7 +39,7 @@ public class FixCommand extends CommandBase {
             player = getCommandSenderAsPlayer(iCommandSender);
         }catch (PlayerNotFoundException exception){
             if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be a player to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needplayer");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 iCommandSender.sendMessage(textComponent);
                 return;
@@ -73,13 +74,13 @@ public class FixCommand extends CommandBase {
 
                 if(server.sendCommandFeedback()) {
                     if(!repairSomething){
-                        ITextComponent textComponent = new TextComponentString("No items to repair.");
+                        ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.fix.nodamage");
                         textComponent.getStyle().setColor(TextFormatting.RED);
                         iCommandSender.sendMessage(textComponent);
                         return;
                     }
 
-                    ITextComponent textComponent = new TextComponentString("All items fixed.");
+                    ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.fix.all");
                     textComponent.getStyle().setColor(TextFormatting.GREEN);
                     iCommandSender.sendMessage(textComponent);
                 }
@@ -92,7 +93,7 @@ public class FixCommand extends CommandBase {
 
         if(itemStack.isEmpty()){
             if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be holding an item to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needitem");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 iCommandSender.sendMessage(textComponent);
                 return;
@@ -100,7 +101,7 @@ public class FixCommand extends CommandBase {
         } else {
             if(!itemStack.isItemDamaged() || !itemStack.isItemStackDamageable()){
                 if(server.sendCommandFeedback()) {
-                    ITextComponent textComponent = new TextComponentString("Item is not damaged.");
+                    ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.fix.nodamage");
                     textComponent.getStyle().setColor(TextFormatting.RED);
                     iCommandSender.sendMessage(textComponent);
                 }
@@ -109,7 +110,7 @@ public class FixCommand extends CommandBase {
 
             itemStack.setItemDamage(0);
             if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("Item fixed.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.fix.success");
                 textComponent.getStyle().setColor(TextFormatting.GREEN);
                 iCommandSender.sendMessage(textComponent);
             }

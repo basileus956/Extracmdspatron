@@ -1,0 +1,78 @@
+commands.extracmds.usage.error=Invalid command usage. Usage: %s
+commands.extracmds.usage.needplayer=You must be a player to use this command.
+commands.extracmds.usage.needitem=You must be holding an item to use this command.
+command.extracmds.usage.needenchant=The item has no enchantments.
+command.extracmds.usage.tooargs=Too many arguments.
+
+commands.extracmds.attribute.noItem=You must be holding an item to use this command.
+commands.extracmds.attribute.invalidAttribute=Invalid attribute typed in.
+commands.extracmds.attribute.invalidAmount=Invalid amount for attribute.
+commands.extracmds.attribute.invalidSlot=Invalid slot typed in.
+commands.extracmds.attribute.invalidOperation=Invalid operation typed in.
+commands.extracmds.attribute.success=Attribute %s has been applied.
+commands.extracmds.attribute.usage=/attribute <slot> <attribute> <amount> [operation]
+
+commands.enchantify.usage=/enchantify <enchant> <level>
+commands.enchantify.notFound="You need to specify an enchantment."
+
+commands.extracmds.feed.usage=/feed or /feed <player>
+commands.extracmds.feed.error.notPlayer=You must specify a player to feed.
+commands.extracmds.feed.success.self=You have been fed.
+command.extracmds.feed.success.other=Fed %s.
+
+commands.extracmds.fix.usage=/fix or /fix all
+commands.extracmds.fix.nothing=You have nothing to fix.
+commands.extracmds.fix.all=All items have been fixed.
+commands.extracmds.fix.nodamage=Item doesn't need fixing.
+commands.extracmds.fix.success=Item has been fixed.
+
+commands.extracmds.heal.usage=/heal or /heal <player>
+commands.extracmds.heal.error.not_player=You must specify a player to heal.
+commands.extracmds.heal.success.self=You have been healed.
+commands.extracmds.heal.success.other=Healed %s.
+
+commands.extracmds.lore.usage=/lore <line>
+commands.extracmds.lore.error.no_line=You must provide a lore line.
+commands.extracmds.lore.success=Added lore line: %s
+
+commands.extracmds.unenchant.usage=/unenchant [enchantment]
+commands.extracmds.unenchant.remove=All enchantments have been removed.
+commands.extracmds.unenchant.invalid=Invalid enchantment.
+commands.extracmds.unenchant.noenchant=The item does not have this enchantment.
+commands.extracmds.unenchant.success=Enchantment has been removed.
+
+commands.extracmds.skull.usage=/skull <player> or /skull
+
+commands.extracmds.rename.usage=/rename <name>
+commands.extracmds.rename.error.noName=You must provide a name.
+commands.extracmds.rename.success=Item has been renamed to %s
+
+commands.extracmds.replaceloreline.usage=/replaceloreline <line> <new line>
+commands.extracmds.replaceloreline.error.noLine=You must provide a line number and the new lore line.
+commands.extracmds.replaceloreline.error.firstarg=The first argument must be a number.
+commands.extracmds.replaceloreline.error.invalidLine=Invalid line number.
+commands.extracmds.replaceloreline.success=Replaced lore line %s with %s
+
+commands.extracmds.removelore.usage=/removelore [line number]
+commands.extracmds.removelore.error.nolore=The held item has no lore to remove.
+commands.extracmds.removelore.error.invalid=Invalid line number.
+commands.extracmds.removelore.bounds=Line number out of bounds.
+commands.extracmds.removelore.success=Removed lore line %s
+commands.extracmds.removelore.success.all=Removed all lore from the held item.
+
+commands.extracmds.potion.usage=/potion <setcolour|settype|add|remove> <hex colour>/<type>/<effect>/<index> [duration] [amplifier] [show particles] [ambient]
+commands.extracmds.potion.usage.setcolour=Usage: /potion <setcolour/setcolor> <colour>
+commands.extracmds.potion.usage.settype=Usage: /potion <settype> <type>
+commands.extracmds.potion.usage.add=Usage: /potion <add> <effect> [duration] [amplifier] [showParticles] [ambient]
+commands.extracmds.potion.usage.remove=Usage: /potion <remove> <index>
+commands.extracmds.potion.error.onlyliving=Only living entities may use this command.
+commands.extracmds.potion.error.invalidcolor=The given colour was invalid.
+commands.extracmds.potion.error.invalidtype=The given type could not be found.
+commands.extracmds.potion.error.invalideffect=The given effect could not be found.
+commands.extracmds.potion.error.invalidindex.notint=The given index was not an integer.
+commands.extracmds.potion.error.invalidindex.zero=Index cannot be 0 or less.
+commands.extracmds.potion.error.invalidindex.toobig=The given index was greater than the amount of custom effects on your potion.
+commands.extracmds.potion.success.colour=The colour has been set.
+commands.extracmds.potion.success.type=The type has been set.
+commands.extracmds.potion.success.effect=Successfully added the effect.
+commands.extracmds.potion.success.remove=Effect %s of type %s with a duration of %s seconds and an amplifier of %s and %s ambient has been removed.

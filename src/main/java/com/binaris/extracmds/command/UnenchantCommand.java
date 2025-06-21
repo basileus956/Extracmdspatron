@@ -28,7 +28,7 @@ public class UnenchantCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/unenchant [enchantment]";
+        return "commands.extracmds.unenchant.usage";
     }
 
     @Override
@@ -37,23 +37,26 @@ public class UnenchantCommand extends CommandBase {
         ItemStack itemStack = player.getHeldItemMainhand();
 
         if (itemStack.isEmpty()) {
-            throw new CommandException("You must be holding an item to use this command.");
+            throw new CommandException("commands.extracmds.usage.needitem");
         }
 
         NBTTagList enchantments = itemStack.getEnchantmentTagList();
         if (enchantments.hasNoTags()) {
-            throw new CommandException("The item has no enchantments.");
+            throw new CommandException("command.extracmds.usage.needenchant");
         }
 
         if (args.length == 0) {
-            itemStack.getTagCompound().removeTag("ench");
-            notifyCommandListener(sender, this, "All enchantments have been removed.");
+            NBTTagCompound tag = itemStack.getTagCompound();
+            if (tag != null) {
+                tag.removeTag("ench");
+            }
+            notifyCommandListener(sender, this, "commands.extracmds.unenchant.remove");
         } else {
             String enchantmentName = args[0];
             Enchantment enchantment = Enchantment.getEnchantmentByLocation(enchantmentName);
 
             if (enchantment == null) {
-                throw new CommandException("Invalid enchantment: " + enchantmentName);
+                throw new CommandException("commands.extracmds.unenchant.invalid", enchantmentName);
             }
 
             boolean found = false;
@@ -68,14 +71,18 @@ public class UnenchantCommand extends CommandBase {
                 }
             }
 
-            if (found) {
-                if (enchantments.hasNoTags()) {
-                    itemStack.getTagCompound().removeTag("ench");
-                }
-                notifyCommandListener(sender, this, "Enchantment " + enchantmentName + " has been removed.");
-            } else {
-                throw new CommandException("The item does not have the enchantment: " + enchantmentName);
+            if (!found) {
+                throw new CommandException("commands.extracmds.unenchant.noenchant", enchantmentName);
             }
+
+            if (enchantments.hasNoTags()) {
+                NBTTagCompound tag = itemStack.getTagCompound();
+                if (tag != null) {
+                    tag.removeTag("ench");
+                }
+            }
+
+            notifyCommandListener(sender, this, "commands.extracmds.unenchant.success", enchantmentName);
         }
 
         player.inventory.markDirty();
@@ -84,27 +91,44 @@ public class UnenchantCommand extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 1) {
-            EntityPlayerMP player = null;
             try {
-                player = getCommandSenderAsPlayer(sender);
-            } catch (PlayerNotFoundException e) {
+                EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+                ItemStack itemStack = player.getHeldItemMainhand();
+
+                if (!itemStack.isEmpty()) {
+                    NBTTagList enchantments = itemStack.getEnchantmentTagList();
+                    List<String> enchantmentNames = new ArrayList<>();
+
+                    for (int i = 0; i < enchantments.tagCount(); i++) {
+                        NBTTagCompound enchantmentCompound = enchantments.getCompoundTagAt(i);
+                        int enchantmentId = enchantmentCompound.getShort("id");
+                        Enchantment enchantment = Enchantment.getEnchantmentByID(enchantmentId);
+
+                        if (enchantment != null && enchantment.getRegistryName() != null) {
+                            enchantmentNames.add(enchantment.getRegistryName().toString());
+                        }
+                    }
+
+                    String userInput = args[0].toLowerCase();
+                    List<String> matches = new ArrayList<>();
+
+                    for (String fullName : enchantmentNames) {
+                        String[] parts = fullName.split(":");
+                        String path = parts.length > 1 ? parts[1] : parts[0];
+
+                        if (fullName.toLowerCase().startsWith(userInput) || path.toLowerCase().startsWith(userInput)) {
+                            matches.add(fullName);
+                        }
+                    }
+
+                    return matches;
+                }
+            } catch (PlayerNotFoundException ignored) {
                 return Collections.emptyList();
             }
-            ItemStack itemStack = player.getHeldItemMainhand();
-            if (!itemStack.isEmpty()) {
-                NBTTagList enchantments = itemStack.getEnchantmentTagList();
-                List<String> enchantmentNames = new ArrayList<>();
-                for (int i = 0; i < enchantments.tagCount(); i++) {
-                    NBTTagCompound enchantmentCompound = enchantments.getCompoundTagAt(i);
-                    int enchantmentId = enchantmentCompound.getShort("id");
-                    Enchantment enchantment = Enchantment.getEnchantmentByID(enchantmentId);
-                    if (enchantment != null) {
-                        enchantmentNames.add(enchantment.getRegistryName().toString());
-                    }
-                }
-                return getListOfStringsMatchingLastWord(args, enchantmentNames);
-            }
         }
+
         return Collections.emptyList();
     }
 }
+
