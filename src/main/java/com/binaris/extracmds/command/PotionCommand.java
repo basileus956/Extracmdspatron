@@ -3,33 +3,53 @@ package com.binaris.extracmds.command;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
+import net.minecraft.command.*;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.potion.PotionType;
-import net.minecraft.potion.PotionUtils;
+import net.minecraft.potion.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-// This command is based in the original /potion command from the mod "MoreCommands",
-// I just refactored it to be better to read and understand and added some new features.
-
-// Silly warnings... o-o
 @SuppressWarnings("NullableProblems")
 public class PotionCommand extends CommandBase {
+
+    private static final Map<String, String> COLOR_NAME_MAP = new HashMap<>();
+    private static final Map<String, String> COLOR_ALIAS_MAP = new HashMap<>();
+
+    static {
+        COLOR_NAME_MAP.put("black", "000000");
+        COLOR_NAME_MAP.put("dark_blue", "0000AA");
+        COLOR_NAME_MAP.put("dark_green", "00AA00");
+        COLOR_NAME_MAP.put("dark_aqua", "00AAAA");
+        COLOR_NAME_MAP.put("dark_red", "AA0000");
+        COLOR_NAME_MAP.put("dark_purple", "AA00AA");
+        COLOR_NAME_MAP.put("gold", "FFAA00");
+        COLOR_NAME_MAP.put("grey", "AAAAAA");
+        COLOR_NAME_MAP.put("dark_grey", "555555");
+        COLOR_NAME_MAP.put("blue", "5555FF");
+        COLOR_NAME_MAP.put("green", "55FF55");
+        COLOR_NAME_MAP.put("aqua", "55FFFF");
+        COLOR_NAME_MAP.put("red", "FF5555");
+        COLOR_NAME_MAP.put("purple", "FF55FF");
+        COLOR_NAME_MAP.put("yellow", "FFFF55");
+        COLOR_NAME_MAP.put("white", "FFFFFF");
+        COLOR_NAME_MAP.put("orange", "FF8800");
+        COLOR_NAME_MAP.put("brown", "8B4513");
+        COLOR_NAME_MAP.put("pink", "FFB6C1");
+
+        COLOR_ALIAS_MAP.put("gray", "grey");
+        COLOR_ALIAS_MAP.put("dark_gray", "dark_grey");
+        COLOR_ALIAS_MAP.put("light_purple", "purple");
+    }
+
     @Override
     public String getName() {
         return "potion";
@@ -37,147 +57,268 @@ public class PotionCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/potion <setcolour|settype|add|remove> <hex colour>/<type>/<effect>/<index> [duration] [amplifier] [show particles] [ambient] Add or remove an effect to your potion or set its colour. Duration should be an integer and defaults to 60, amplifier should be a byte (int with a max value of 127) and defaults to 0, index-based, show-particles should be a boolean and defaults to true and ambient (semi-show particles) should be a boolean and defaults to false. E.g. /potion setcolour #000000 OR /potion settype minecraft:long_night_vision OR /potion add minecraft:fire_resistance 120 1 false true OR /potion remove 1.";
+        return "commands.extracmds.potion.usage";
+    }
+
+    @Override
+    public int getRequiredPermissionLevel() {
+        return 2;
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        // Check if the arguments are valid
-        if (args.length < 2 || !Lists.newArrayList("setcolour", "setcolor", "settype", "add", "remove").contains(args[0])){
-            boolean handled = handleUsageError(sender, args);
-
-            if(handled) return;
-            else {
-                sendErrorMessage(sender, "Usage: /potion <setcolour/setcolor> <colour>");
-                sendErrorMessage(sender, "Usage: /potion <settype> <type>");
-                sendErrorMessage(sender, "Usage: /potion <add> <effect> [duration] [amplifier] [showParticles] [ambient]");
-                sendErrorMessage(sender, "Usage: /potion <remove> <index>");
-                return;
-            }
-        }
-
-        // Check if the sender is a player
-        else if (!(sender instanceof EntityLivingBase)) {
-            sendErrorMessage(sender, "Only living entities may use this command.");
+        if (args.length < 1 || !Lists.newArrayList("setcolour", "setcolor", "settype", "add", "remove").contains(args[0].toLowerCase())) {
+            if (handleUsageError(sender, args)) return;
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.setcolour");
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.settype");
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.add");
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.remove");
             return;
         }
 
-        // Check if the sender is holding a potion item
-        ItemStack held = ((EntityLivingBase) sender).getHeldItemMainhand();
-        if (held.getItem() != Items.POTIONITEM && held.getItem() != Items.TIPPED_ARROW && held.getItem() != Items.LINGERING_POTION && held.getItem() != Items.SPLASH_POTION) {
-            sendErrorMessage(sender, "You must be holding a potion item, tipped arrow, lingering potion or a splash potion item for this command to work.");
+        if (!(sender instanceof EntityLivingBase)) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.onlyliving");
             return;
         }
 
-        // Check the subcommand
-        switch (args[0]) {
-            // Set the colour of the potion feature
+        EntityLivingBase entity = (EntityLivingBase) sender;
+        ItemStack held = convertIfArrowOrBottle(entity, entity.getHeldItemMainhand());
+
+        if (!isValidPotionItem(held)) {
+            sendErrorMessage(sender, "commands.extracmds.usage.needitem");
+            return;
+        }
+
+        switch (args[0].toLowerCase()) {
             case "setcolour":
             case "setcolor":
-                if (!isInteger(args[1], 16) && !isInteger(args[1].substring(1), 16))
-                    sendErrorMessage(sender, "The given colour was invalid.");
-                else {
-                    NBTTagCompound nbt = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound());
-                    nbt.setInteger("CustomPotionColor", Integer.parseInt(args[1].startsWith("#") ? args[1].substring(1) : args[1], 16));
-                    held.setTagCompound(nbt);
-                    sendMessage(sender, "The colour of your potion has been set.");
-                }
+                handleSetColor(sender, held, args);
                 break;
-
-
-            // Set the type of the potion feature
             case "settype":
-                PotionType type = PotionType.REGISTRY.getObject(new ResourceLocation(args[1]));
-                if (type.getRegistryName().equals(new ResourceLocation("minecraft:empty")))
-                    sendMessage(sender, "The given type could not be found.");
-                else {
-                    PotionUtils.addPotionToItemStack(held, type);
-                    sendMessage(sender, "Your potion's type has been set.");
-                }
+                handleSetType(sender, held, args);
                 break;
-
-
-            //  Add an effect to the potion feature
             case "add":
-                ResourceLocation loc = new ResourceLocation(args[1]);
-                Potion potion = null;
-                for (Potion pot : Iterators.toArray(Potion.REGISTRY.iterator(), Potion.class))
-                    if (pot.getRegistryName().equals(loc)) {
-                        potion = pot;
-                        break;
-                    }
-                if (potion == null)
-                    sendErrorMessage(sender, TextFormatting.RED + "The given effect could not be found.");
-                else {
-                    int duration = args.length >= 3 && isInteger(args[2]) ? Integer.parseInt(args[2]) * 20 : 60 * 20;
-                    int amplifier = args.length >= 4 && isInteger(args[3]) ? Math.min(Integer.parseInt(args[3]), Byte.MAX_VALUE) : 0;
-                    boolean showParticles = args.length >= 5 && isInteger(args[4]) ? Boolean.parseBoolean(args[4]) : true;
-                    boolean ambient = args.length >= 6 && isInteger(args[5]) ? Boolean.parseBoolean(args[5]) : false;
-                    NBTTagList oldTagList = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound()).getTagList("CustomPotionEffects", 10).copy();
-                    PotionUtils.appendEffects(held, Lists.newArrayList(new PotionEffect(potion, duration, amplifier, ambient, showParticles)));
-                    NBTTagList newTagList = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound()).getTagList("CustomPotionEffects", 10);
-                    oldTagList.forEach(nbt -> newTagList.appendTag(nbt)); // There seems to be an internal bug where it gets the tag list with a
-                    // type of 9 even though its type is 10, so we fix that here.
-                    sendMessage(sender, "Successfully added the effect to your potion.");
-                }
+                handleAddEffect(sender, held, args);
                 break;
-
-
-            // Remove an effect from the potion feature
             case "remove":
-                NBTTagList list = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound()).getTagList("CustomPotionEffects", 10);
-                if (!isInteger(args[1])) sendErrorMessage(sender, "The given index was not an integer.");
-                else if (Integer.parseInt(args[1]) <= 0) sendErrorMessage(sender, "Index cannot be 0 or less.");
-                else if (Integer.parseInt(args[1]) > list.tagCount())
-                    sendErrorMessage(sender, "The given index (" + Integer.parseInt(args[1]) + ") was greater than the amount of custom effects on your potion (" + list.tagCount() + ").");
-                else {
-                    PotionEffect effect = PotionEffect.readCustomPotionEffectFromNBT((NBTTagCompound) list.get(Integer.parseInt(args[1]) - 1));
-                    list.removeTag(Integer.parseInt(args[1]) - 1);
-                    sendMessage(sender, "Effect " + Integer.parseInt(args[1]) + " of type " + effect.getPotion().getRegistryName() + " with a duration of " + effect.getDuration() / 20 + " seconds and an amplifier of " + effect.getAmplifier() + " which did " + (effect.doesShowParticles() ? "" : "not ") + "show particles and was" + (effect.getIsAmbient() ? "" : "n't") + " ambient has been removed.");
-                }
+                handleRemove(sender, held, args);
                 break;
         }
     }
 
-    private static boolean handleUsageError(ICommandSender sender, String[] args) {
-        if(!(args.length >= 1)) return false;
-
-        if(args[0].equals("setcolour") || args[0].equals("setcolor")) {
-            sendErrorMessage(sender, "Usage: /potion <setcolour/setcolor> <colour>");
-            return true;
-        } else if(args[0].equals("settype")) {
-            sendErrorMessage(sender, "Usage: /potion <settype> <type>");
-            return true;
-        } else if(args[0].equals("add")) {
-            sendErrorMessage(sender, "Usage: /potion <add> <effect> [duration] [amplifier] [showParticles] [ambient]");
-            return true;
-        } else if(args[0].equals("remove")) {
-            sendErrorMessage(sender, "Usage: /potion <remove> <index>");
-            return true;
+    private static void handleSetColor(ICommandSender sender, ItemStack held, String[] args) {
+        if (args.length < 2) {
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.setcolour");
+            return;
         }
 
-        return false;
+        String input = args[1].startsWith("#") ? args[1].substring(1) : args[1];
+        String key = input.toLowerCase();
+        if (COLOR_ALIAS_MAP.containsKey(key)) key = COLOR_ALIAS_MAP.get(key);
+        if (COLOR_NAME_MAP.containsKey(key)) input = COLOR_NAME_MAP.get(key);
+
+        if (!isInteger(input, 16)) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.invalidcolor");
+            return;
+        }
+
+        int newColor = Integer.parseInt(input, 16);
+        NBTTagCompound nbt = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound());
+        if (nbt.hasKey("CustomPotionColor") && nbt.getInteger("CustomPotionColor") == newColor) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.samecolor");
+            return;
+        }
+
+        nbt.setInteger("CustomPotionColor", newColor);
+        held.setTagCompound(nbt);
+        sendMessage(sender, "commands.extracmds.potion.success.colour");
+    }
+
+    private static void handleSetType(ICommandSender sender, ItemStack held, String[] args) {
+        if (args.length < 2) {
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.settype");
+            return;
+        }
+
+        PotionType newType = PotionType.REGISTRY.getObject(new ResourceLocation(args[1]));
+        if (newType == null) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.invalidtype");
+            return;
+        }
+
+        PotionType currentType = PotionUtils.getPotionFromItem(held);
+        if (newType == currentType) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.sametype");
+            return;
+        }
+
+        PotionUtils.addPotionToItemStack(held, newType);
+        sendMessage(sender, "commands.extracmds.potion.success.type");
+    }
+
+    private static void handleAddEffect(ICommandSender sender, ItemStack held, String[] args) {
+        if (args.length < 2) {
+            sendErrorMessage(sender, "commands.extracmds.potion.usage.add");
+            return;
+        }
+
+        ResourceLocation loc = new ResourceLocation(args[1]);
+        Potion potion = null;
+        for (Potion pot : Iterators.toArray(Potion.REGISTRY.iterator(), Potion.class)) {
+            if (pot.getRegistryName().equals(loc)) {
+                potion = pot;
+                break;
+            }
+        }
+
+        if (potion == null) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.invalideffect");
+            return;
+        }
+
+        int duration = args.length >= 3 && isInteger(args[2]) ? Integer.parseInt(args[2]) * 20 : 60 * 20;
+        int amplifier = args.length >= 4 && isInteger(args[3]) ? Math.min(Integer.parseInt(args[3]), Byte.MAX_VALUE) : 0;
+        boolean showParticles = args.length >= 5 && Boolean.parseBoolean(args[4]);
+        boolean ambient = args.length >= 6 && Boolean.parseBoolean(args[5]);
+
+        PotionEffect newEffect = new PotionEffect(potion, duration, amplifier, ambient, showParticles);
+        NBTTagCompound tag = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound());
+        NBTTagList list = tag.getTagList("CustomPotionEffects", 10);
+
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound effectNBT = list.getCompoundTagAt(i);
+            PotionEffect existing = PotionEffect.readCustomPotionEffectFromNBT(effectNBT);
+            if (existing.getPotion() == potion) {
+                list.removeTag(i);
+                break;
+            }
+        }
+
+        list.appendTag(newEffect.writeCustomPotionEffectToNBT(new NBTTagCompound()));
+        tag.setTag("CustomPotionEffects", list);
+        held.setTagCompound(tag);
+        sendMessage(sender, "commands.extracmds.potion.success.effect");
+    }
+
+    private static void handleRemove(ICommandSender sender, ItemStack held, String[] args) {
+        NBTTagCompound tag = held.getTagCompound();
+        if (tag == null || !tag.hasKey("CustomPotionEffects")) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.invalidindex.toobig");
+            return;
+        }
+
+        NBTTagList list = tag.getTagList("CustomPotionEffects", 10);
+
+        if (args.length == 1) {
+            tag.removeTag("CustomPotionEffects");
+            held.setTagCompound(tag.hasNoTags() ? null : tag);
+            sendMessage(sender, "commands.extracmds.potion.success.removeall");
+            return;
+        }
+
+        if (!isInteger(args[1])) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.invalidindex.notint");
+            return;
+        }
+
+        int index = Integer.parseInt(args[1]);
+        if (index <= 0 || index > list.tagCount()) {
+            sendErrorMessage(sender, "commands.extracmds.potion.error.invalidindex.toobig");
+            return;
+        }
+
+        PotionEffect effect = PotionEffect.readCustomPotionEffectFromNBT(list.getCompoundTagAt(index - 1));
+        list.removeTag(index - 1);
+
+        if (list.tagCount() == 0) {
+            tag.removeTag("CustomPotionEffects");
+            held.setTagCompound(tag.hasNoTags() ? null : tag);
+        } else {
+            tag.setTag("CustomPotionEffects", list);
+            held.setTagCompound(tag);
+        }
+
+        sendMessage(sender, new TextComponentTranslation(
+            "commands.extracmds.potion.success.remove",
+            index,
+            effect.getPotion().getRegistryName().toString()
+        ));
+    }
+
+    private static boolean isValidPotionItem(ItemStack stack) {
+        return stack.getItem() == Items.POTIONITEM ||
+               stack.getItem() == Items.SPLASH_POTION ||
+               stack.getItem() == Items.LINGERING_POTION ||
+               stack.getItem() == Items.TIPPED_ARROW ||
+               stack.getItem() == Items.GLASS_BOTTLE ||
+               stack.getItem() == Items.ARROW;
+    }
+
+    private static ItemStack convertIfArrowOrBottle(EntityLivingBase entity, ItemStack held) {
+        if (held.getItem() == Items.ARROW) {
+            ItemStack tippedArrow = new ItemStack(Items.TIPPED_ARROW, held.getCount());
+            if (held.hasTagCompound()) tippedArrow.setTagCompound(held.getTagCompound().copy());
+            entity.setHeldItem(entity.getActiveHand(), tippedArrow);
+            return tippedArrow;
+        } else if (held.getItem() == Items.GLASS_BOTTLE) {
+            ItemStack potionBottle = new ItemStack(Items.POTIONITEM, held.getCount());
+            if (held.hasTagCompound()) potionBottle.setTagCompound(held.getTagCompound().copy());
+            entity.setHeldItem(entity.getActiveHand(), potionBottle);
+            return potionBottle;
+        }
+        return held;
+    }
+
+    private static boolean handleUsageError(ICommandSender sender, String[] args) {
+        if (args.length < 1) return false;
+        switch (args[0].toLowerCase()) {
+            case "setcolour":
+            case "setcolor":
+                sendErrorMessage(sender, "commands.extracmds.potion.usage.setcolour");
+                return true;
+            case "settype":
+                sendErrorMessage(sender, "commands.extracmds.potion.usage.settype");
+                return true;
+            case "add":
+                sendErrorMessage(sender, "commands.extracmds.potion.usage.add");
+                return true;
+            case "remove":
+                sendErrorMessage(sender, "commands.extracmds.potion.usage.remove");
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-        return args.length == 1 ?
-                getListOfStringsMatchingLastWord(args, Lists.newArrayList("setcolour", "settype", "add", "remove"))
-                : args.length == 2 ? args[0].equals("add") ? getListOfStringsMatchingLastWord(args, Potion.REGISTRY.getKeys()) :
-                args[0].equals("settype") ? getListOfStringsMatchingLastWord(args, PotionType.REGISTRY.getKeys()) : new ArrayList() :
-                new ArrayList();
+        if (args.length == 1) {
+            return getListOfStringsMatchingLastWord(args, Lists.newArrayList("setcolour", "settype", "add", "remove"));
+        } else if (args.length == 2 && ("setcolour".equalsIgnoreCase(args[0]) || "setcolor".equalsIgnoreCase(args[0]))) {
+            return getListOfStringsMatchingLastWord(args, new ArrayList<>(COLOR_NAME_MAP.keySet()));
+        } else if (args.length == 2 && "add".equalsIgnoreCase(args[0])) {
+            return getListOfStringsMatchingLastWord(args, Potion.REGISTRY.getKeys());
+        } else if (args.length == 2 && "settype".equalsIgnoreCase(args[0])) {
+            return getListOfStringsMatchingLastWord(args, PotionType.REGISTRY.getKeys());
+        }
+        return new ArrayList<>();
     }
 
-    private static void sendErrorMessage(ICommandSender sender, String message) {
-        TextComponentString textComponent = new TextComponentString(message);
-        textComponent.getStyle().setColor(TextFormatting.RED);
-        sender.sendMessage(textComponent);
+    private static void sendErrorMessage(ICommandSender sender, String translationKey) {
+        TextComponentTranslation text = new TextComponentTranslation(translationKey);
+        text.getStyle().setColor(TextFormatting.RED);
+        sender.sendMessage(text);
     }
 
-    private static void sendMessage(ICommandSender sender, String message) {
-        TextComponentString textComponent = new TextComponentString(message);
-        textComponent.getStyle().setColor(TextFormatting.GREEN);
-        sender.sendMessage(textComponent);
+    private static void sendMessage(ICommandSender sender, String translationKey) {
+        TextComponentTranslation text = new TextComponentTranslation(translationKey);
+        text.getStyle().setColor(TextFormatting.GREEN);
+        sender.sendMessage(text);
+    }
+
+    private static void sendMessage(ICommandSender sender, TextComponentTranslation text) {
+        text.getStyle().setColor(TextFormatting.GREEN);
+        sender.sendMessage(text);
     }
 
     private static boolean isInteger(String s) {
