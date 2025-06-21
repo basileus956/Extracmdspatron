@@ -181,12 +181,27 @@ public class TagRodCommand extends CommandBase {
     }
 
     private static void maybeClearNBT(ItemStack stack, NBTTagCompound root) {
-        if (!root.hasKey(ROOT_TAG) && !root.hasKey("Booster")) {
-            stack.setTagCompound(null);
+        // Remove CustomRodTag if empty
+        if (root.hasKey(ROOT_TAG)) {
+            NBTTagList tagList = root.getTagList(ROOT_TAG, 10);
+            if (tagList.tagCount() == 0) {
+                root.removeTag(ROOT_TAG);
+            }
+        }
+
+        // If only "Booster" and/or "CustomRodTag" remain, and both are now gone, wipe the root tag entirely
+        Set<String> keys = root.getKeySet();
+        if (keys.stream().allMatch(k -> k.equals(ROOT_TAG) || k.equals("Booster"))) {
+            if (!root.hasKey(ROOT_TAG) && !root.hasKey("Booster")) {
+                stack.setTagCompound(null); // Safe to wipe
+            } else {
+                stack.setTagCompound(root); // Keep relevant mod tags
+            }
         } else {
-            stack.setTagCompound(root);
+            stack.setTagCompound(root); // Retain all other unrelated NBT
         }
     }
+
     @SubscribeEvent
     public static void onFish(ItemFishedEvent event) {
         EntityPlayer player = event.getEntityPlayer();
