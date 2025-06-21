@@ -10,6 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -24,7 +25,7 @@ public class RemoveAttributeCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/removeattribute [attribute] [slot]";
+        return "commands.extracmds.removeattribute.usage";
     }
 
     @Override
@@ -33,11 +34,11 @@ public class RemoveAttributeCommand extends CommandBase {
         ItemStack itemStack = player.getHeldItemMainhand();
 
         if (itemStack.isEmpty()) {
-            throw new CommandException("You must be holding an item to use this command.");
+            throw new CommandException(I18n.translateToLocal("commands.extracmds.removeattribute.need_item"));
         }
 
         if (!itemStack.hasTagCompound() || !itemStack.getTagCompound().hasKey("AttributeModifiers", 9)) {
-            throw new CommandException("The item has no attributes.");
+            throw new CommandException(I18n.translateToLocal("commands.extracmds.removeattribute.no_attributes"));
         }
 
         NBTTagCompound tag = itemStack.getTagCompound();
@@ -48,7 +49,7 @@ public class RemoveAttributeCommand extends CommandBase {
             if (tag.hasNoTags()) {
                 itemStack.setTagCompound(null);
             }
-            notifyCommandListener(sender, this, "All attributes have been removed.");
+            notifyCommandListener(sender, this, I18n.translateToLocal("commands.extracmds.removeattribute.all_removed"));
         } else {
             String attributeName = args[0];
             String targetSlot = args.length >= 2 ? args[1] : null;
@@ -62,8 +63,8 @@ public class RemoveAttributeCommand extends CommandBase {
                 if (nameMatches && slotMatches) {
                     nbttaglist.removeTag(i);
                     found = true;
-                    i--; // Adjust index after removal
-                    if (targetSlot != null) break; // Remove only one match if slot specified
+                    i--;
+                    if (targetSlot != null) break;
                 }
             }
 
@@ -74,12 +75,18 @@ public class RemoveAttributeCommand extends CommandBase {
                         itemStack.setTagCompound(null);
                     }
                 }
-                String msg = "Attribute " + attributeName + " has been removed";
-                if (targetSlot != null) msg += " from the " + targetSlot + " slot";
-                notifyCommandListener(sender, this, msg + ".");
+                if (targetSlot != null) {
+                    notifyCommandListener(sender, this,
+                            I18n.translateToLocalFormatted("commands.extracmds.removeattribute.removed_slot", attributeName, targetSlot));
+                } else {
+                    notifyCommandListener(sender, this,
+                            I18n.translateToLocalFormatted("commands.extracmds.removeattribute.removed", attributeName));
+                }
             } else {
-                throw new CommandException("The item does not have the attribute: " + attributeName +
-                        (targetSlot != null ? " on slot: " + targetSlot : ""));
+                throw new CommandException(
+                        I18n.translateToLocalFormatted("commands.extracmds.removeattribute.not_found",
+                                attributeName, targetSlot != null ? targetSlot : "-")
+                );
             }
         }
 
