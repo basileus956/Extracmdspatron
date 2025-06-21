@@ -12,12 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-// Silly warnings... o-o
 @SuppressWarnings("NullableProblems")
 public class RemoveAttributeCommand extends CommandBase {
 
@@ -28,7 +24,7 @@ public class RemoveAttributeCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/removeattribute [attribute]";
+        return "/removeattribute [attribute] [slot]";
     }
 
     @Override
@@ -36,43 +32,54 @@ public class RemoveAttributeCommand extends CommandBase {
         EntityPlayerMP player = getCommandSenderAsPlayer(sender);
         ItemStack itemStack = player.getHeldItemMainhand();
 
-        // Check if the player is holding an item
         if (itemStack.isEmpty()) {
             throw new CommandException("You must be holding an item to use this command.");
         }
 
-        // Check if the item has attributes
         if (!itemStack.hasTagCompound() || !itemStack.getTagCompound().hasKey("AttributeModifiers", 9)) {
             throw new CommandException("The item has no attributes.");
         }
 
-        // Remove all attributes
+        NBTTagCompound tag = itemStack.getTagCompound();
+        NBTTagList nbttaglist = tag.getTagList("AttributeModifiers", 10);
+
         if (args.length == 0) {
-            itemStack.getTagCompound().removeTag("AttributeModifiers");
+            tag.removeTag("AttributeModifiers");
+            if (tag.hasNoTags()) {
+                itemStack.setTagCompound(null);
+            }
             notifyCommandListener(sender, this, "All attributes have been removed.");
         } else {
-            // Remove a specific attribute
             String attributeName = args[0];
+            String targetSlot = args.length >= 2 ? args[1] : null;
             boolean found = false;
 
-            // get the attributes tag list
-            NBTTagList nbttaglist = itemStack.getTagCompound().getTagList("AttributeModifiers", 10);
             for (int i = 0; i < nbttaglist.tagCount(); i++) {
-                // get the specific tag compound
                 NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
-                if (nbttagcompound.getString("AttributeName").equals(attributeName)) {
+                boolean nameMatches = nbttagcompound.getString("AttributeName").equals(attributeName);
+                boolean slotMatches = (targetSlot == null || nbttagcompound.getString("Slot").equalsIgnoreCase(targetSlot));
+
+                if (nameMatches && slotMatches) {
                     nbttaglist.removeTag(i);
                     found = true;
+                    i--; // Adjust index after removal
+                    if (targetSlot != null) break; // Remove only one match if slot specified
                 }
             }
 
             if (found) {
                 if (nbttaglist.tagCount() == 0) {
-                    itemStack.getTagCompound().removeTag("AttributeModifiers");
+                    tag.removeTag("AttributeModifiers");
+                    if (tag.hasNoTags()) {
+                        itemStack.setTagCompound(null);
+                    }
                 }
-                notifyCommandListener(sender, this, "Attribute " + attributeName + " has been removed.");
+                String msg = "Attribute " + attributeName + " has been removed";
+                if (targetSlot != null) msg += " from the " + targetSlot + " slot";
+                notifyCommandListener(sender, this, msg + ".");
             } else {
-                throw new CommandException("The item does not have the attribute: " + attributeName);
+                throw new CommandException("The item does not have the attribute: " + attributeName +
+                        (targetSlot != null ? " on slot: " + targetSlot : ""));
             }
         }
 
@@ -81,24 +88,34 @@ public class RemoveAttributeCommand extends CommandBase {
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
-        if (args.length == 1) {
-            EntityPlayerMP player;
-            try {
-                player = getCommandSenderAsPlayer(sender);
-            } catch (PlayerNotFoundException e) {
-                return Collections.emptyList();
-            }
+        try {
+            EntityPlayerMP player = getCommandSenderAsPlayer(sender);
             ItemStack itemStack = player.getHeldItemMainhand();
-            if (!itemStack.isEmpty() && itemStack.hasTagCompound()) {
-                NBTTagList nbttaglist = itemStack.getTagCompound().getTagList("AttributeModifiers", 10);
+
+            if (itemStack.isEmpty() || !itemStack.hasTagCompound()) return Collections.emptyList();
+
+            NBTTagList nbttaglist = itemStack.getTagCompound().getTagList("AttributeModifiers", 10);
+
+            if (args.length == 1) {
                 Set<String> attributeNames = new HashSet<>();
                 for (int i = 0; i < nbttaglist.tagCount(); i++) {
                     NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
                     attributeNames.add(nbttagcompound.getString("AttributeName"));
                 }
                 return getListOfStringsMatchingLastWord(args, attributeNames);
+            } else if (args.length == 2) {
+                String selectedAttribute = args[0];
+                Set<String> matchingSlots = new HashSet<>();
+                for (int i = 0; i < nbttaglist.tagCount(); i++) {
+                    NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
+                    if (nbttagcompound.getString("AttributeName").equals(selectedAttribute)) {
+                        matchingSlots.add(nbttagcompound.getString("Slot"));
+                    }
+                }
+                return getListOfStringsMatchingLastWord(args, matchingSlots);
             }
-        }
+        } catch (PlayerNotFoundException ignored) {}
+
         return Collections.emptyList();
     }
 
@@ -107,5 +124,3 @@ public class RemoveAttributeCommand extends CommandBase {
         return false;
     }
 }
-
-
