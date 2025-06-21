@@ -48,5 +48,14 @@ public class ExtraCMDS {
         event.registerServerCommand(new UnenchantCommand());
         event.registerServerCommand(new RemoveLoreCommand());
         event.registerServerCommand(new RemoveAttributeCommand());
+        event.registerServerCommand(new UnbreakableCommand());
+        event.registerServerCommand(new SoarCommand());
+        event.registerServerCommand(new BookCommand());
+        event.registerServerCommand(new GlowCommand());
+        event.registerServerCommand(new UnglowCommand());
+        event.registerServerCommand(new PeekCommand());
+        event.registerServerCommand(new XPBottleCommand());
+        event.registerServerCommand(new TagRodCommand());
     }
 }
+
