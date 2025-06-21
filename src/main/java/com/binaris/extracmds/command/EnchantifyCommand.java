@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// Silly warnings... o-o
 @SuppressWarnings("NullableProblems")
 public class EnchantifyCommand extends CommandBase {
 
@@ -25,76 +24,74 @@ public class EnchantifyCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/enchantify <enchant> <level>";
+        return "commands.extracmds.enchantify.usage";
     }
-
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length < 1) {
             throw new WrongUsageException(getUsage(sender));
-        } else {
-            EntityLivingBase livingBase = null;
-            Enchantment enchantment;
-            int enchantmentLevel = 1;
-
-            try {
-                enchantment = Enchantment.getEnchantmentByID(parseInt(args[0], 0));
-            } catch (NumberInvalidException var12) {
-                enchantment = Enchantment.getEnchantmentByLocation(args[0]);
-            }
-
-            // Enchantment passed as first argument
-            if(enchantment != null){
-                livingBase = getCommandSenderAsPlayer(sender);
-
-                if (args.length >= 2) enchantmentLevel = secureParseInt(args[1]);
-
-            }
-
-            if (enchantment == null) {
-                throw new NumberInvalidException("commands.enchant.notFound", new Object[]{args[0]});
-            } else {
-                ItemStack stack = livingBase.getHeldItemMainhand();
-                if (stack.isEmpty()) {
-                    throw new CommandException("commands.enchant.noItem", new Object[0]);
-                } else {
-                    if (args.length >= 3) {
-                        enchantmentLevel = parseInt(args[2]);
-                    }
-
-                    setEnchantment(enchantment, enchantmentLevel, stack);
-                    notifyCommandListener(sender, this, "commands.enchant.success", new Object[0]);
-                    sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, 1);
-                }
-            }
         }
-    }
 
-    private static int secureParseInt(String s) {
+        Enchantment enchantment;
+        int enchantmentLevel = 1;
+
         try {
-            return Integer.parseInt(s);
-        } catch (Exception e) {
-            return 1;
+            enchantment = Enchantment.getEnchantmentByID(parseInt(args[0], 0));
+        } catch (NumberInvalidException e) {
+            enchantment = Enchantment.getEnchantmentByLocation(args[0]);
         }
+
+        if (enchantment == null) {
+            throw new NumberInvalidException("commands.extracmds.enchantify.notFound", args[0]);
+        }
+
+        EntityLivingBase livingBase = getCommandSenderAsPlayer(sender);
+        ItemStack stack = livingBase.getHeldItemMainhand();
+
+        if (stack.isEmpty()) {
+            throw new CommandException("commands.extracmds.enchantify.noItem");
+        }
+
+        if (args.length >= 2) {
+            try {
+                enchantmentLevel = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                throw new CommandException("commands.extracmds.enchantify.invalidLevel");
+            }
+        }
+
+        setEnchantment(enchantment, enchantmentLevel, stack);
+        notifyCommandListener(sender, this, "commands.enchant.success");
+        sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, 1);
     }
 
-    private static void setEnchantment(Enchantment enchantment, int level, ItemStack stack){
-        if (stack.getTagCompound() == null)
-        {
+    private static void setEnchantment(Enchantment enchantment, int level, ItemStack stack) {
+        if (stack.getTagCompound() == null) {
             stack.setTagCompound(new NBTTagCompound());
         }
 
-        if (!stack.getTagCompound().hasKey("ench", 9))
-        {
-            stack.getTagCompound().setTag("ench", new NBTTagList());
+        NBTTagCompound tag = stack.getTagCompound();
+        NBTTagList enchantList = tag.hasKey("ench", 9) ? tag.getTagList("ench", 10) : new NBTTagList();
+        boolean updated = false;
+
+        for (int i = 0; i < enchantList.tagCount(); i++) {
+            NBTTagCompound enchantData = enchantList.getCompoundTagAt(i);
+            if (enchantData.getShort("id") == Enchantment.getEnchantmentID(enchantment)) {
+                enchantData.setShort("lvl", (short) level);
+                updated = true;
+                break;
+            }
         }
 
-        NBTTagList nbttaglist = stack.getTagCompound().getTagList("ench", 10);
-        NBTTagCompound nbttagcompound = new NBTTagCompound();
-        nbttagcompound.setShort("id", (short)Enchantment.getEnchantmentID(enchantment));
-        nbttagcompound.setShort("lvl", (short) level);
-        nbttaglist.appendTag(nbttagcompound);
+        if (!updated) {
+            NBTTagCompound enchantData = new NBTTagCompound();
+            enchantData.setShort("id", (short) Enchantment.getEnchantmentID(enchantment));
+            enchantData.setShort("lvl", (short) level);
+            enchantList.appendTag(enchantData);
+        }
+
+        tag.setTag("ench", enchantList);
     }
 
     @Override
@@ -102,19 +99,11 @@ public class EnchantifyCommand extends CommandBase {
         if (args.length == 1) {
             return new ArrayList<>(getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()));
         }
-//        else {
-//            if(args.length == 2){
-//                if(Enchantment.getEnchantmentByLocation(args[0]) != null){
-//                    return Collections.emptyList();
-//                }
-//            }
-//            return args.length == 2 ? getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys()) : Collections.emptyList();
-//        }
         return Collections.emptyList();
     }
 
     @Override
-    public boolean isUsernameIndex(String[] p_82358_1_, int p_82358_2_) {
-        return p_82358_2_ == 0;
+    public boolean isUsernameIndex(String[] args, int index) {
+        return false;
     }
 }
