@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 // Silly warnings... o-o
@@ -24,38 +25,38 @@ public class ReplaceLoreLineCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/replaceloreline <line> <new line>";
+        return "commands.extracmds.replaceloreline.usage";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] strings) throws CommandException {
-        EntityPlayerMP player = null;
+        EntityPlayerMP player;
 
         try {
             player = getCommandSenderAsPlayer(sender);
         } catch (PlayerNotFoundException exception) {
             if (server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be a player to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needplayer");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
-                return;
             }
+            return;
         }
 
         ItemStack itemStack = player.getHeldItemMainhand();
 
         if (itemStack.isEmpty()) {
             if (server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be holding an item to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needitem");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
-                return;
             }
+            return;
         }
 
         if (strings.length < 2) {
             if (server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must provide a line number and the new lore line.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.replaceloreline.error.noLine");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
             }
@@ -66,7 +67,7 @@ public class ReplaceLoreLineCommand extends CommandBase {
         try {
             lineNumber = Integer.parseInt(strings[0]) - 1; // Convert to zero-indexed
         } catch (NumberFormatException e) {
-            ITextComponent textComponent = new TextComponentString("The first argument must be a number.");
+            ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.replaceloreline.error.firstarg");
             textComponent.getStyle().setColor(TextFormatting.RED);
             sender.sendMessage(textComponent);
             return;
@@ -76,16 +77,15 @@ public class ReplaceLoreLineCommand extends CommandBase {
         for (int i = 1; i < strings.length; i++) {
             loreLine.append(strings[i]).append(" ");
         }
-        loreLine.deleteCharAt(loreLine.length() - 1);
+        loreLine.deleteCharAt(loreLine.length() - 1); // Remove last space
 
-        // Replace all the & with §
         loreLine = new StringBuilder(loreLine.toString().replace('&', '\u00A7'));
 
         NBTTagCompound displayTag = itemStack.getOrCreateSubCompound("display");
         NBTTagList loreList = displayTag.getTagList("Lore", 8);
 
         if (lineNumber < 0 || lineNumber >= loreList.tagCount()) {
-            ITextComponent textComponent = new TextComponentString("Invalid line number.");
+            ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.replaceloreline.error.invalidLine");
             textComponent.getStyle().setColor(TextFormatting.RED);
             sender.sendMessage(textComponent);
             return;
@@ -95,7 +95,10 @@ public class ReplaceLoreLineCommand extends CommandBase {
         displayTag.setTag("Lore", loreList);
 
         if (server.sendCommandFeedback()) {
-            ITextComponent textComponent = new TextComponentString("Set lore line " + (lineNumber + 1) + " to: " + loreLine);
+            ITextComponent textComponent = new TextComponentTranslation(
+                    "commands.extracmds.replaceloreline.success",
+                    lineNumber + 1, loreLine.toString()
+            );
             textComponent.getStyle().setColor(TextFormatting.GREEN);
             sender.sendMessage(textComponent);
         }

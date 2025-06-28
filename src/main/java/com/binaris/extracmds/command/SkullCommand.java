@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 // Silly warnings... o-o
@@ -20,41 +21,39 @@ public class SkullCommand extends CommandBase {
     }
 
     @Override
-    public String getUsage(ICommandSender iCommandSender) {
-        return "/skull <player> or /skull";
+    public String getUsage(ICommandSender sender) {
+        return "commands.extracmds.skull.usage";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] strings) throws CommandException {
-        EntityPlayerMP player = null;
+        EntityPlayerMP player;
 
-        try{
+        try {
             player = getCommandSenderAsPlayer(sender);
-        }catch (PlayerNotFoundException exception){
-            if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be a player to use this command.");
-                textComponent.getStyle().setColor(TextFormatting.RED);
-                sender.sendMessage(textComponent);
-                return;
-            }
-        }
-
-        String playerHeadName;
-        if(strings.length == 0){
-            playerHeadName = player.getName();
-        } else {
-            playerHeadName = strings[0];
-        }
-
-        if(strings.length > 1){
-            if(server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("Too many arguments.");
+        } catch (PlayerNotFoundException exception) {
+            if (server.sendCommandFeedback()) {
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needplayer");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
             }
             return;
         }
 
-        server.commandManager.executeCommand(sender, "give " + player.getName() + " minecraft:skull 1 3 {SkullOwner:" + playerHeadName + "}");
+        if (strings.length > 1) {
+            if (server.sendCommandFeedback()) {
+                ITextComponent textComponent = new TextComponentTranslation("command.extracmds.usage.tooargs");
+                textComponent.getStyle().setColor(TextFormatting.RED);
+                sender.sendMessage(textComponent);
+            }
+            return;
+        }
+
+        String playerHeadName = (strings.length == 0) ? player.getName() : strings[0];
+
+        server.commandManager.executeCommand(
+                sender,
+                "give " + player.getName() + " minecraft:skull 1 3 {SkullOwner:" + playerHeadName + "}"
+        );
     }
 }

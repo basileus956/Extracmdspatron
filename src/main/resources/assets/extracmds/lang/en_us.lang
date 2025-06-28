@@ -1,0 +1,163 @@
+commands.extracmds.usage.error=Invalid command usage. Usage: %s
+commands.extracmds.usage.needplayer=You must be a player to use this command.
+commands.extracmds.usage.needitem=You must be holding a valid item to use this command.
+command.extracmds.usage.needenchant=The item has no enchantments.
+command.extracmds.usage.tooargs=Too many arguments.
+
+commands.extracmds.attribute.noItem=You must be holding an item to use this command.
+commands.extracmds.attribute.invalidAttribute=Invalid attribute.
+commands.extracmds.attribute.invalidAmount=Invalid amount.
+commands.extracmds.attribute.invalidSlot=Invalid slot.
+commands.extracmds.attribute.invalidOperation=Invalid operation.
+commands.extracmds.attribute.success=Attribute %s has been applied.
+commands.extracmds.attribute.usage=/attribute <slot> <attribute> <amount> [operation]
+
+commands.extracmds.removeattribute.usage=/removeattribute [attribute] [slot]
+commands.extracmds.removeattribute.need_item=You must be holding an item to use this command.
+commands.extracmds.removeattribute.no_attributes=The item has no attributes.
+commands.extracmds.removeattribute.all_removed=All attributes have been removed.
+commands.extracmds.removeattribute.removed=Attribute %s has been removed.
+commands.extracmds.removeattribute.removed_slot=Attribute %s has been removed from the %s slot.
+commands.extracmds.removeattribute.not_found=The item does not have the attribute: %s on slot: %s
+
+commands.extracmds.enchantify.usage=/enchantify <enchant> [level]
+commands.extracmds.enchantify.notFound=Enchantment could not be found.
+commands.extracmds.enchantify.invalidLevel=Invalid enchantment level. Must be a number.
+commands.extracmds.enchantify.noItem=You must be holding an item to use this command.
+
+commands.extracmds.feed.usage=/feed [player]
+commands.extracmds.feed.error.notPlayer=You must specify an online player to feed.
+commands.extracmds.feed.success.self=You have been fed.
+command.extracmds.feed.success.other=Fed %s.
+
+commands.extracmds.fix.usage=/fix [all]
+commands.extracmds.fix.nothing=You have nothing to fix.
+commands.extracmds.fix.all=All items have been fixed.
+commands.extracmds.fix.nodamage=Item doesn't need fixing.
+commands.extracmds.fix.success=Item has been fixed.
+
+commands.extracmds.heal.usage=/heal [player]
+commands.extracmds.heal.error.not_player=You must specify an online player to heal.
+commands.extracmds.heal.success.self=You have been healed.
+commands.extracmds.heal.success.other=Healed %s.
+
+commands.extracmds.lore.usage=/lore <line>
+commands.extracmds.lore.error.no_line=You must provide a lore line.
+commands.extracmds.lore.success=Added lore line: %s
+
+commands.extracmds.unenchant.usage=/unenchant [enchantment]
+commands.extracmds.unenchant.remove=All enchantments have been removed.
+commands.extracmds.unenchant.invalid=Invalid enchantment.
+commands.extracmds.unenchant.noenchant=The item does not have this enchantment.
+commands.extracmds.unenchant.success=Enchantment has been removed.
+
+commands.extracmds.skull.usage=/skull [player]
+
+commands.extracmds.peek.usage=/peek
+
+commands.extracmds.xpbottle.usage=/xpbottle <consumable|throwable> <amount[l]> [count]
+commands.extracmds.xpbottle.success=Gave %1$d %2$s XP bottle(s) with %3$d %4$s
+commands.extracmds.xpbottle.invalid_type=Invalid bottle type. Use 'throwable' or 'consumable'.
+tooltip.extracmds.xpbottle.stored=§dStored %s: %d §a(%s)
+xpbottle.type.throwable=Throwable
+xpbottle.type.consumable=Consumable
+
+commands.extracmds.rename.usage=/rename <name>
+commands.extracmds.rename.error.noName=You must provide a name.
+commands.extracmds.rename.success=Item has been renamed to %s
+
+commands.extracmds.glow.usage=/glow
+commands.extracmds.glow.success=This item now has an illusory enchantment glow.
+commands.extracmds.glow.extant=This item already has an illusory enchantment glow.
+
+commands.extracmds.unglow.usage=/unglow
+commands.extracmds.unglow.success=Illusory enchantment glow removed.
+commands.extracmds.unglow.none=This item does not have an illusory enchantment glow.
+
+commands.extracmds.soar.usage=/soar <level>
+commands.extracmds.soar.invalidlevel=Invalid flight level. Must be between -128 and 127.
+commands.extracmds.soar.set=Set flight duration to %s.
+
+commands.extracmds.unbreakable.usage=/unbreakable <true|false>
+commands.extracmds.unbreakable.set=Unbreakable tag set to %s.
+commands.extracmds.unbreakable.already=Item is already set to %s.
+
+commands.extracmds.tagrod.usage=/tagrod <booster|item|loot|remove>
+commands.extracmds.tagrod.usage.booster=/tagrod booster
+commands.extracmds.tagrod.usage.item=/tagrod item <item_id> [count] [metadata] [chance] [nbt_json]
+commands.extracmds.tagrod.usage.loot=/tagrod loot <loot_table_id> [chance]
+commands.extracmds.tagrod.usage.remove=/tagrod remove [index]
+
+commands.extracmds.tagrod.set_item=Rod configured to catch: %s
+commands.extracmds.tagrod.set_loot=Rod configured to catch from loot table: %s
+commands.extracmds.tagrod.removed_index=Removed entry at index %s.
+commands.extracmds.tagrod.cleared=Cleared all custom fishing entries.
+commands.extracmds.tagrod.unknown_item=Unknown item: %s
+commands.extracmds.tagrod.unknown_loot=Unknown loot table: %s
+commands.extracmds.tagrod.invalid_index=Invalid index. No entry exists at that position.
+commands.extracmds.tagrod.invalid_nbt=Invalid NBT data: %s
+
+commands.extracmds.tagrod.set_booster=Booster mode enabled on your fishing rod.
+commands.extracmds.tagrod.unset_booster=Booster mode disabled on your fishing rod.
+
+commands.extracmds.tagrod.tooltip.booster=Booster Rod
+commands.extracmds.tagrod.tooltip.header=Rod Catches:
+commands.extracmds.tagrod.tooltip.item=Item: %s
+commands.extracmds.tagrod.tooltip.loot=Loot: %s
+commands.extracmds.tagrod.tooltip.count=×%s
+commands.extracmds.tagrod.tooltip.chance=(Chance: %s%%)
+
+commands.extracmds.book.usage=/book <seal|unseal|title|author|generation|enchant|unenchant> <...>
+
+commands.extracmds.book.usage.seal=/book seal
+commands.extracmds.book.usage.unseal=/book unseal
+commands.extracmds.book.seal.success=Book sealed successfully.
+commands.extracmds.book.unseal.success=Book unsealed successfully.
+commands.extracmds.book.seal.empty=Cannot seal an empty book!
+
+commands.extracmds.book.usage.title=/book title <title>
+commands.extracmds.book.usage.author=/book author <author>
+commands.extracmds.book.usage.generation=/book generation <original|copy_of_original|copy_of_copy|tattered>
+commands.extracmds.book.settitle=Set book title to "%s"
+commands.extracmds.book.setauthor=Set book author to "%s"
+commands.extracmds.book.setgeneration=Set book generation to %s.
+commands.extracmds.book.title.toolong=Title is too long! Max 32 characters.
+
+commands.extracmds.book.usage.enchant=/book enchant <enchantment> [level]
+commands.extracmds.book.usage.unenchant=/book unenchant [enchantment]
+commands.extracmds.book.unenchant.success=Removed %s from the book.
+commands.extracmds.book.unenchant.fail=No matching stored enchantments were found to remove.
+commands.extracmds.book.unenchant.all=Removed all stored enchantments from the book.
+
+commands.extracmds.replaceloreline.usage=/replaceloreline <line> <new line>
+commands.extracmds.replaceloreline.error.noLine=You must provide a line number and the new lore line.
+commands.extracmds.replaceloreline.error.firstarg=The first argument must be a number.
+commands.extracmds.replaceloreline.error.invalidLine=Invalid line number.
+commands.extracmds.replaceloreline.success=Replaced lore line %s with %s
+
+commands.extracmds.removelore.usage=/removelore [line number]
+commands.extracmds.removelore.error.nolore=The item has no lore to remove.
+commands.extracmds.removelore.error.invalid=Invalid line number.
+commands.extracmds.removelore.bounds=Line number out of bounds.
+commands.extracmds.removelore.success=Removed lore line %s
+commands.extracmds.removelore.success.all=Removed all lore from the item.
+
+commands.extracmds.potion.usage=/potion <setcolour|settype|remove|add> <colour>/<type>/[index]/<effect> [duration] [amplifier] [showParticles] [ambient]
+commands.extracmds.potion.usage.setcolour=Usage: /potion <setcolor/setcolour> <colour>
+commands.extracmds.potion.usage.settype=Usage: /potion <settype> <type>
+commands.extracmds.potion.usage.add=Usage: /potion <add> <effect> [duration] [amplifier] [showParticles] [ambient]
+commands.extracmds.potion.usage.remove=Usage: /potion <remove> [index]
+commands.extracmds.potion.error.onlyliving=Only living entities may use this command.
+commands.extracmds.potion.error.invalidcolor=The given colour was invalid.
+commands.extracmds.potion.error.invalidtype=The given type could not be found.
+commands.extracmds.potion.error.invalideffect=The given effect could not be found.
+commands.extracmds.potion.error.invalidindex.notint=The given index was not an integer.
+commands.extracmds.potion.error.invalidindex.zero=Index cannot be 0 or less.
+commands.extracmds.potion.error.invalidindex.toobig=The given index was greater than the amount of custom effects on your potion.
+commands.extracmds.potion.error.samecolor=This potion already has that colour.
+commands.extracmds.potion.error.sametype=This potion already has that type.
+commands.extracmds.potion.success.colour=The colour has been set.
+commands.extracmds.potion.success.type=The type has been set.
+commands.extracmds.potion.success.effect=Successfully added the effect.
+commands.extracmds.potion.success.remove=Effect %s of type %s has been removed.
+commands.extracmds.potion.success.removeall=All custom potion effects have been removed.

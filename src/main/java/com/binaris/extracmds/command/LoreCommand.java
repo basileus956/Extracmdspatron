@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 // Silly warnings... o-o
@@ -24,7 +25,7 @@ public class LoreCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/lore <line>";
+        return "commands.extracmds.lore.usage";
     }
 
     @Override
@@ -35,7 +36,7 @@ public class LoreCommand extends CommandBase {
             player = getCommandSenderAsPlayer(sender);
         } catch (PlayerNotFoundException exception) {
             if (server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be a player to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needplayer");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
                 return;
@@ -46,7 +47,7 @@ public class LoreCommand extends CommandBase {
 
         if (itemStack.isEmpty()) {
             if (server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must be holding an item to use this command.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.usage.needitem");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
                 return;
@@ -55,7 +56,7 @@ public class LoreCommand extends CommandBase {
 
         if (strings.length == 0) {
             if (server.sendCommandFeedback()) {
-                ITextComponent textComponent = new TextComponentString("You must provide a lore line.");
+                ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.lore.error.no_line");
                 textComponent.getStyle().setColor(TextFormatting.RED);
                 sender.sendMessage(textComponent);
             }
@@ -78,7 +79,7 @@ public class LoreCommand extends CommandBase {
         displayTag.setTag("Lore", loreList);
 
         if (server.sendCommandFeedback()) {
-            ITextComponent textComponent = new TextComponentString("Added lore line: " + loreLine);
+            ITextComponent textComponent = new TextComponentTranslation("commands.extracmds.lore.success", loreLine);
             textComponent.getStyle().setColor(TextFormatting.GREEN);
             sender.sendMessage(textComponent);
         }

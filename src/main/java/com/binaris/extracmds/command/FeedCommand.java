@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -22,7 +23,7 @@ public class FeedCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/feed or /feed <player>";
+        return "commands.extracmds.feed.usage";
     }
 
     @Override
@@ -34,7 +35,7 @@ public class FeedCommand extends CommandBase {
             if (sender instanceof EntityPlayerMP) {
                 player = (EntityPlayerMP) sender;
             } else {
-                throw new CommandException("You must specify a player to feed if not a player.");
+                throw new CommandException("commands.extracmds.feed.error.notPlayer");
             }
         } else {
             // Find the player specified in the arguments
@@ -47,10 +48,10 @@ public class FeedCommand extends CommandBase {
 
         // Send feedback to the player and the command sender (if different)
         if (sender.equals(player)) {
-            sender.sendMessage(new TextComponentString("You have been fed to full hunger."));
+            sender.sendMessage(new TextComponentTranslation("commands.extracmds.feed.success.self"));
         } else {
-            sender.sendMessage(new TextComponentString("Fed " + player.getName() + " to full hunger."));
-            player.sendMessage(new TextComponentString("You have been fed to full hunger."));
+            sender.sendMessage(new TextComponentTranslation("command.extracmds.feed.success.other", player.getName()));
+            player.sendMessage(new TextComponentTranslation("commands.extracmds.feed.success.self"));
         }
     }
 

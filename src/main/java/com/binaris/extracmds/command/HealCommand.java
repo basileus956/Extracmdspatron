@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -22,7 +23,7 @@ public class HealCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/heal or /heal <player>";
+        return "commands.extracmds.heal.usage";
     }
 
     @Override
@@ -34,7 +35,7 @@ public class HealCommand extends CommandBase {
             if (sender instanceof EntityPlayerMP) {
                 player = (EntityPlayerMP) sender;
             } else {
-                throw new CommandException("You must specify a player to heal if not a player.");
+                throw new CommandException("commands.extracmds.heal.error.not_player");
             }
         } else {
             // Find the player specified in the arguments
@@ -46,10 +47,10 @@ public class HealCommand extends CommandBase {
 
         // Send feedback to the player and the command sender (if different)
         if (sender.equals(player)) {
-            sender.sendMessage(new TextComponentString("You have been healed to full health."));
+            sender.sendMessage(new TextComponentTranslation("commands.extracmds.heal.success.self"));
         } else {
-            sender.sendMessage(new TextComponentString("Healed " + player.getName() + " to full health."));
-            player.sendMessage(new TextComponentString("You have been healed to full health."));
+            sender.sendMessage(new TextComponentTranslation("commands.extracmds.heal.success.other", player.getName()));
+            player.sendMessage(new TextComponentTranslation("commands.extracmds.heal.success.self"));
         }
     }
 
