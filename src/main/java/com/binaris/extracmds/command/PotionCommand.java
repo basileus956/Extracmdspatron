@@ -185,12 +185,12 @@ public class PotionCommand extends CommandBase {
         NBTTagCompound tag = MoreObjects.firstNonNull(held.getTagCompound(), new NBTTagCompound());
         NBTTagList list = tag.getTagList("CustomPotionEffects", 10);
 
-        for (int i = 0; i < list.tagCount(); i++) {
+        // Remove ALL matching effects to override properly
+        for (int i = list.tagCount() - 1; i >= 0; i--) {
             NBTTagCompound effectNBT = list.getCompoundTagAt(i);
             PotionEffect existing = PotionEffect.readCustomPotionEffectFromNBT(effectNBT);
             if (existing.getPotion() == potion) {
                 list.removeTag(i);
-                break;
             }
         }
 
@@ -239,9 +239,9 @@ public class PotionCommand extends CommandBase {
         }
 
         sendMessage(sender, new TextComponentTranslation(
-            "commands.extracmds.potion.success.remove",
-            index,
-            effect.getPotion().getRegistryName().toString()
+                "commands.extracmds.potion.success.remove",
+                index,
+                effect.getPotion().getRegistryName().toString()
         ));
     }
 
