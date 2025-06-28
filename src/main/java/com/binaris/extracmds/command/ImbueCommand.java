@@ -48,22 +48,27 @@ public class ImbueCommand extends CommandBase {
             throw new CommandException("commands.extracmds.usage.needitem");
         }
 
+        // --- BOSS-LEVEL REMOVE ---
         if (args.length >= 1 && args[0].equalsIgnoreCase("remove")) {
-            NBTTagCompound tag = stack.getTagCompound();
-            if (tag != null && tag.hasKey(IMBUEMENT_TAG)) {
-                NBTTagCompound imbue = tag.getCompoundTag(IMBUEMENT_TAG);
-                NBTTagList list = imbue.getTagList("Effects", 10);
+            if (stack.hasTagCompound() && stack.getTagCompound().hasKey(IMBUEMENT_TAG)) {
+                NBTTagCompound tag = stack.getTagCompound();
 
                 if (args.length == 1) {
+                    // Remove ALL Imbuement, but keep other NBT alive
                     tag.removeTag(IMBUEMENT_TAG);
-                    stack.setTagCompound(tag.hasNoTags() ? null : tag);
+                    stack.setTagCompound(tag);
                     player.sendMessage(new TextComponentTranslation("commands.extracmds.imbue.cleared"));
                     return;
                 }
 
+                // Remove by index
+                NBTTagCompound imbue = tag.getCompoundTag(IMBUEMENT_TAG);
+                NBTTagList list = imbue.getTagList("Effects", 10);
+
                 int index = parseInt(args[1], 1) - 1;
-                if (index < 0 || index >= list.tagCount())
+                if (index < 0 || index >= list.tagCount()) {
                     throw new CommandException("commands.extracmds.imbue.invalid_index");
+                }
 
                 list.removeTag(index);
 
@@ -74,7 +79,7 @@ public class ImbueCommand extends CommandBase {
                     tag.setTag(IMBUEMENT_TAG, imbue);
                 }
 
-                stack.setTagCompound(tag.hasNoTags() ? null : tag);
+                stack.setTagCompound(tag);
                 player.sendMessage(new TextComponentTranslation("commands.extracmds.imbue.removed", index + 1));
             } else {
                 throw new CommandException("commands.extracmds.imbue.empty");
@@ -82,6 +87,7 @@ public class ImbueCommand extends CommandBase {
             return;
         }
 
+        // --- APPLY ---
         if (args.length < 1) throw new WrongUsageException(getUsage(sender));
 
         Potion potion = Potion.getPotionFromResourceLocation(args[0]);
@@ -103,9 +109,9 @@ public class ImbueCommand extends CommandBase {
         NBTTagCompound tag = stack.getOrCreateSubCompound(IMBUEMENT_TAG);
         NBTTagList effects = tag.getTagList("Effects", 10);
 
+        // Remove any old duplicate
         for (int i = 0; i < effects.tagCount(); i++) {
-            NBTTagCompound e = effects.getCompoundTagAt(i);
-            if (potion.getRegistryName().toString().equals(e.getString("Id"))) {
+            if (potion.getRegistryName().toString().equals(effects.getCompoundTagAt(i).getString("Id"))) {
                 effects.removeTag(i);
                 break;
             }
@@ -127,12 +133,14 @@ public class ImbueCommand extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) {
-            List<ResourceLocation> base = new ArrayList<>();
-            base.add(new ResourceLocation("remove", "remove"));
-            base.addAll(Potion.REGISTRY.getKeys());
+            List<String> base = new ArrayList<>();
+            base.add("remove");
+            for (ResourceLocation key : Potion.REGISTRY.getKeys()) {
+                base.add(key.toString());
+            }
             return getListOfStringsMatchingLastWord(args, base);
         } else if (args.length == 2 && "remove".equalsIgnoreCase(args[0])) {
-            return Collections.emptyList(); // Optional: Suggest indexes dynamically if you want
+            return Collections.emptyList(); // Could be upgraded to suggest indexes dynamically
         }
         return Collections.emptyList();
     }
