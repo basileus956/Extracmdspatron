@@ -107,8 +107,7 @@ commands.extracmds.tagrod.tooltip.loot=Loot: %s
 commands.extracmds.tagrod.tooltip.count=×%s
 commands.extracmds.tagrod.tooltip.chance=(Chance: %s%%)
 
-commands.extracmds.imbue.usage=/imbue add <effect> [duration] [amplifier] [showParticles] [showTooltip]
-commands.extracmds.imbue.usage.remove=/imbue remove [index]
+commands.extracmds.imbue.usage=/imbue add|remove <effect> [duration] [amplifier] [showParticles] [showTooltip]|[index]
 commands.extracmds.imbue.cleared=All imbuement effects removed.
 commands.extracmds.imbue.invalid_potion=Invalid potion effect name.
 commands.extracmds.imbue.invalid_amplifier=Invalid amplifier value. Must be between 0 and 255.
