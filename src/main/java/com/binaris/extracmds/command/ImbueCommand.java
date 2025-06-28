@@ -48,27 +48,26 @@ public class ImbueCommand extends CommandBase {
             throw new CommandException("commands.extracmds.usage.needitem");
         }
 
-        // --- BOSS-LEVEL REMOVE ---
-        if (args.length >= 1 && args[0].equalsIgnoreCase("remove")) {
-            if (stack.hasTagCompound() && stack.getTagCompound().hasKey(IMBUEMENT_TAG)) {
-                NBTTagCompound tag = stack.getTagCompound();
+        if (args.length < 1) throw new WrongUsageException(getUsage(sender));
 
+        String subcommand = args[0].toLowerCase(Locale.ROOT);
+
+        if ("remove".equals(subcommand)) {
+            NBTTagCompound tag = stack.getTagCompound();
+            if (tag != null && tag.hasKey(IMBUEMENT_TAG)) {
                 if (args.length == 1) {
-                    // Remove ALL Imbuement, but keep other NBT alive
+                    // Remove all imbuement data, keep other NBT intact
                     tag.removeTag(IMBUEMENT_TAG);
-                    stack.setTagCompound(tag);
+                    stack.setTagCompound(tag.hasNoTags() ? null : tag);
                     player.sendMessage(new TextComponentTranslation("commands.extracmds.imbue.cleared"));
                     return;
                 }
-
                 // Remove by index
                 NBTTagCompound imbue = tag.getCompoundTag(IMBUEMENT_TAG);
                 NBTTagList list = imbue.getTagList("Effects", 10);
-
                 int index = parseInt(args[1], 1) - 1;
-                if (index < 0 || index >= list.tagCount()) {
+                if (index < 0 || index >= list.tagCount())
                     throw new CommandException("commands.extracmds.imbue.invalid_index");
-                }
 
                 list.removeTag(index);
 
@@ -79,7 +78,7 @@ public class ImbueCommand extends CommandBase {
                     tag.setTag(IMBUEMENT_TAG, imbue);
                 }
 
-                stack.setTagCompound(tag);
+                stack.setTagCompound(tag.hasNoTags() ? null : tag);
                 player.sendMessage(new TextComponentTranslation("commands.extracmds.imbue.removed", index + 1));
             } else {
                 throw new CommandException("commands.extracmds.imbue.empty");
@@ -87,60 +86,59 @@ public class ImbueCommand extends CommandBase {
             return;
         }
 
-        // --- APPLY ---
-        if (args.length < 1) throw new WrongUsageException(getUsage(sender));
+        if ("add".equals(subcommand)) {
+            if (args.length < 2) throw new WrongUsageException(getUsage(sender));
 
-        Potion potion = Potion.getPotionFromResourceLocation(args[0]);
-        if (potion == null) throw new CommandException("commands.extracmds.imbue.invalid_potion");
+            Potion potion = Potion.getPotionFromResourceLocation(args[1]);
+            if (potion == null) throw new CommandException("commands.extracmds.imbue.invalid_potion");
 
-        int duration = args.length >= 2 ? parseInt(args[1]) : 30;
-
-        int amplifier = 0;
-        if (args.length >= 3) {
-            amplifier = parseInt(args[2]);
-            if (amplifier < 0 || amplifier > 255) {
+            int duration = args.length >= 3 ? parseInt(args[2]) : 60; // seconds
+            int amplifier = args.length >= 4 ? parseInt(args[3]) : 0;
+            if (amplifier < 0 || amplifier > 255)
                 throw new CommandException("commands.extracmds.imbue.invalid_amplifier");
+
+            boolean showParticles = args.length >= 5 ? parseBoolean(args[4]) : true;
+            boolean showTooltip = args.length >= 6 ? parseBoolean(args[5]) : true;
+
+            NBTTagCompound tag = stack.getOrCreateSubCompound(IMBUEMENT_TAG);
+            NBTTagList effects = tag.getTagList("Effects", 10);
+
+            // Remove any old effect of the same type
+            for (int i = 0; i < effects.tagCount(); i++) {
+                NBTTagCompound e = effects.getCompoundTagAt(i);
+                if (potion.getRegistryName().toString().equals(e.getString("Id"))) {
+                    effects.removeTag(i);
+                    break;
+                }
             }
+
+            NBTTagCompound effectTag = new NBTTagCompound();
+            effectTag.setString("Id", potion.getRegistryName().toString());
+            effectTag.setInteger("Duration", duration);
+            effectTag.setInteger("Amplifier", amplifier);
+            effectTag.setBoolean("ShowParticles", showParticles);
+            effectTag.setBoolean("ShowTooltip", showTooltip);
+
+            effects.appendTag(effectTag);
+            tag.setTag("Effects", effects);
+
+            stack.setTagInfo(IMBUEMENT_TAG, tag);
+            player.sendMessage(new TextComponentTranslation("commands.extracmds.imbue.applied", potion.getName()));
+            return;
         }
 
-        boolean showParticles = args.length >= 4 ? parseBoolean(args[3]) : true;
-        boolean showTooltip = args.length >= 5 ? parseBoolean(args[4]) : true;
-
-        NBTTagCompound tag = stack.getOrCreateSubCompound(IMBUEMENT_TAG);
-        NBTTagList effects = tag.getTagList("Effects", 10);
-
-        // Remove any old duplicate
-        for (int i = 0; i < effects.tagCount(); i++) {
-            if (potion.getRegistryName().toString().equals(effects.getCompoundTagAt(i).getString("Id"))) {
-                effects.removeTag(i);
-                break;
-            }
-        }
-
-        NBTTagCompound effectTag = new NBTTagCompound();
-        effectTag.setString("Id", potion.getRegistryName().toString());
-        effectTag.setInteger("Duration", duration);
-        effectTag.setInteger("Amplifier", amplifier);
-        effectTag.setBoolean("ShowParticles", showParticles);
-        effectTag.setBoolean("ShowTooltip", showTooltip);
-
-        effects.appendTag(effectTag);
-        tag.setTag("Effects", effects);
-
-        player.sendMessage(new TextComponentTranslation("commands.extracmds.imbue.applied", potion.getName()));
+        throw new WrongUsageException(getUsage(sender));
     }
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) {
-            List<String> base = new ArrayList<>();
-            base.add("remove");
-            for (ResourceLocation key : Potion.REGISTRY.getKeys()) {
-                base.add(key.toString());
+            return getListOfStringsMatchingLastWord(args, Arrays.asList("add", "remove"));
+        } else if (args.length == 2) {
+            if ("add".equalsIgnoreCase(args[0])) {
+                List<ResourceLocation> base = new ArrayList<>(Potion.REGISTRY.getKeys());
+                return getListOfStringsMatchingLastWord(args, base);
             }
-            return getListOfStringsMatchingLastWord(args, base);
-        } else if (args.length == 2 && "remove".equalsIgnoreCase(args[0])) {
-            return Collections.emptyList(); // Could be upgraded to suggest indexes dynamically
         }
         return Collections.emptyList();
     }
