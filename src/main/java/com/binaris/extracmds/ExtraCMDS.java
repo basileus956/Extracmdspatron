@@ -56,6 +56,7 @@ public class ExtraCMDS {
         event.registerServerCommand(new PeekCommand());
         event.registerServerCommand(new XPBottleCommand());
         event.registerServerCommand(new TagRodCommand());
+        event.registerServerCommand(new ImbueCommand());
     }
 }
 
